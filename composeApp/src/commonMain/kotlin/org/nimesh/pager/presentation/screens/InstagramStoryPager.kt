@@ -10,10 +10,13 @@ import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -24,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloseFullscreen
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -47,6 +51,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -62,7 +67,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.min
 
 @Composable
-fun InstagramStoryPager(modifier: Modifier = Modifier) {
+fun InstagramStoryPager(modifier: Modifier = Modifier, navController: NavController) {
     val imageList = listOf<DrawableResource>(
         Res.drawable.image_1,
         Res.drawable.image_2,
@@ -90,14 +95,28 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
 
     Box {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.safeDrawingPadding().fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
+            Row(
+                modifier = Modifier.clickable {
+                    navController.navigateUp()
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIosNew,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Text(text = "Back", color = Color.White)
+            }
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Instagram Story like pager animation or Cubic animation",
                 modifier = Modifier.padding(16.dp),
-                color = Color.Black,
+                color = Color.White,
                 maxLines = 2,
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
@@ -109,7 +128,7 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                         painter = painterResource(item),
                         contentDescription = null,
                         modifier = Modifier.padding(8.dp)
-                            .border(2.dp, color = Color.Black, shape = CircleShape)
+                            .border(2.dp, color = Color.White, shape = CircleShape)
                             .clip(CircleShape)
                             .size(100.dp).clickable {
                                 coroutineScope.launch {
@@ -121,6 +140,7 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                     )
                 }
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
         if (showPager) {
             HorizontalPager(
@@ -130,7 +150,7 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                 snapPosition = SnapPosition.End,
             ) { page ->
                 Box(
-                    modifier = Modifier.background(Color.Black)
+                    modifier = Modifier.background(Color.White)
                         .graphicsLayer {
                             val pageOffset = pagerState.offsetForPage(page)
                             val offScreenRight = pageOffset < 0f
@@ -142,7 +162,7 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                                 pivotFractionX = if (offScreenRight) 0f else 1f,
                                 pivotFractionY = .5f
                             )
-                        } .drawWithContent {
+                        }.drawWithContent {
                             val pageOffset = pagerState.offsetForPage(page)
 
                             this.drawContent()
@@ -180,7 +200,7 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                     Image(
                         painter = painterResource(imageList[page]),
                         contentDescription = null,
-                        modifier = Modifier.background(Color.Black)
+                        modifier = Modifier.background(Color.White)
                             .fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -188,7 +208,8 @@ fun InstagramStoryPager(modifier: Modifier = Modifier) {
                         onClick = {
                             showPager = false
                         },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+                        modifier = Modifier.safeDrawingPadding().align(Alignment.TopEnd)
+                            .padding(end = 16.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,

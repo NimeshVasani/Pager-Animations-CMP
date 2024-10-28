@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
@@ -48,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
@@ -57,12 +61,17 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
@@ -71,6 +80,7 @@ import endOffsetForPage
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.nimesh.pager.presentation.pager
 import pager_animations.composeapp.generated.resources.Res
 import pager_animations.composeapp.generated.resources.image_1
 import pager_animations.composeapp.generated.resources.image_2
@@ -85,10 +95,11 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Composable
-fun FlipPager(
+fun BookAnimationPager(
     state: PagerState,
     modifier: Modifier = Modifier,
     orientation: FlipPagerOrientation,
+    navController: NavController,
     pageContent: @Composable (Int) -> Unit,
 ) {
     val overscrollAmount = remember { mutableFloatStateOf(0f) }
@@ -109,39 +120,80 @@ fun FlipPager(
 
     when (orientation) {
         FlipPagerOrientation.Vertical -> {
-            VerticalPager(
-                state = state,
-                modifier = modifier
+            Column(
+                modifier = modifier.safeDrawingPadding()
                     .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection),
-                pageContent = {
-                    Content(
-                        it,
-                        state,
-                        orientation,
-                        pageContent,
-                        animatedOverscrollAmount
+            ) {
+                Row(
+                    modifier = Modifier.clickable {
+                        navController.navigateUp()
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBackIosNew,
+                        contentDescription = null,
+                        tint = Color.White
                     )
+                    Text(text = "Back", color = Color.White)
                 }
-            )
+                Spacer(modifier = Modifier.height(16.dp))
+                VerticalPager(
+                    state = state,
+                    modifier = modifier
+                        .padding(horizontal = 32.dp)
+                        .fillMaxSize()
+                        .nestedScroll(nestedScrollConnection),
+                    pageContent = {
+                        Content(
+                            it,
+                            state,
+                            orientation,
+                            pageContent,
+                            animatedOverscrollAmount
+                        )
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
 
         FlipPagerOrientation.Horizontal -> {
-            HorizontalPager(
-                state = state,
-                modifier = modifier
+            Column(
+                modifier = modifier.safeDrawingPadding()
                     .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection),
-                pageContent = {
-                    Content(
-                        it,
-                        state,
-                        orientation,
-                        pageContent,
-                        animatedOverscrollAmount
+            ) {
+                Row(
+                    modifier = Modifier.clickable {
+                        navController.navigateUp()
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBackIosNew,
+                        contentDescription = null,
+                        tint = Color.White
                     )
+                    Text(text = "Back", color = Color.White)
                 }
-            )
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalPager(
+                    state = state,
+                    modifier = modifier
+                        .fillMaxSize()
+                        .nestedScroll(nestedScrollConnection),
+                    pageContent = {
+                        Content(
+                            it,
+                            state,
+                            orientation,
+                            pageContent,
+                            animatedOverscrollAmount
+                        )
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }
@@ -408,17 +460,17 @@ val RightShape: Shape = object : Shape {
 
 }
 
-data class Headline(
+data class ArticleItem(
     val title: String,
     val description: String,
-    val category: String,
-    val image: DrawableResource,
+    val thumbnail: DrawableResource,
 )
 
 @Composable
-fun HeadlineArticle(
+fun ArticleCard(
     modifier: Modifier = Modifier,
-    headline: Headline,
+    pageNo: String,
+    articleItem: ArticleItem,
 ) {
 
     Column(
@@ -433,10 +485,25 @@ fun HeadlineArticle(
                 .background(MaterialTheme.colorScheme.onBackground.copy(alpha = .1f))
         ) {
             Image(
-                painter = painterResource (headline.image) ,
+                painter = painterResource(articleItem.thumbnail),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
+            )
+            Text(
+                text = pageNo.toString(),
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.Black,
+                modifier = Modifier.padding(30.dp).align(Alignment.TopEnd),
+                fontSize = 50.sp,
+                style = TextStyle(
+                    shadow = Shadow(
+                        color = Color.White,
+                        offset = Offset(3f, 3f),
+                        blurRadius = 3f
+                    )
+                )
             )
         }
 
@@ -446,92 +513,64 @@ fun HeadlineArticle(
                 .padding(16.dp)
         ) {
             Text(
-                text = headline.category.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .56f)
+                text = "My life story",
+                fontSize = 20.sp,
+                color = Color.Gray
             )
             Text(
-                text = headline.title,
+                text = articleItem.title,
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = headline.description,
+                text = articleItem.description,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = .84f)
             )
-            Row {
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = { }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                IconButton(onClick = { }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
 }
 
-
-
-
-
-
-
-val headlines = listOf(
-    Headline(
-        title = "Historic Win for Local Soccer Team",
-        description = "In an unexpected turn of events, the local soccer team clinched a historic victory against their arch-rivals. The match, held at the city stadium, was attended by thousands of enthusiastic fans who witnessed a nail-biting finish. The team's captain led from the front, scoring the decisive goal in the final minutes. This win has reignited hopes of a league title for the first time in decades. Fans are ecstatic and celebrations have erupted across the city. The coach praised the team's resilience and tactical discipline. This triumph marks a significant milestone in the team's journey. Supporters are now eagerly looking forward to the upcoming fixtures. The community has rallied behind the team, showcasing immense pride and support.",
-        category = "sports",
-        image = Res.drawable.image_1
+val articleList = listOf(
+    ArticleItem(
+        title = "Exploring the Hidden Trails of Patagonia",
+        description = "Join me on a journey through Patagonia's untouched landscapes. Each trail offers breathtaking views of rugged mountains, sparkling blue lakes, and glaciers. Hiking here, I learned to embrace solitude and the thrill of discovery, far from the usual tourist paths. This adventure taught me the true meaning of wilderness and the joy of finding peace in nature.",
+        thumbnail = Res.drawable.image_1
     ),
-    Headline(
-        title = "Major Breakthrough in Cancer Research",
-        description = "Scientists at the renowned medical institute have announced a major breakthrough in cancer research. The new treatment, which has shown promising results in early trials, targets cancer cells with unprecedented precision. This innovative approach could potentially revolutionize cancer therapy, offering hope to millions of patients worldwide. The research team, led by Dr. Jane Smith, has been working tirelessly for years to achieve this milestone. The treatment has already received accolades from the scientific community. Further clinical trials are set to begin soon, with the aim of making the treatment widely available within the next few years. This development represents a significant leap forward in the fight against cancer. The medical community is optimistic about the future implications. Patients and their families are hopeful for more effective treatments.",
-        category = "health",
-        image = Res.drawable.image_2
+    ArticleItem(
+        title = "A Life-Changing Encounter in Tokyo",
+        description = "Reflecting on an unexpected encounter with a kind stranger in the heart of Tokyo. Amidst the bustling city, this person’s kindness and wisdom reminded me of humanity's universal goodness. We shared stories over tea, and their insight deeply resonated, shifting my views on life, travel, and the beauty of human connection in the most unlikely places.",
+        thumbnail = Res.drawable.image_2
     ),
-    Headline(
-        title = "International Summit on Climate Change Concludes",
-        description = "The annual international summit on climate change concluded today with leaders from around the world pledging renewed commitment to combat global warming. The summit, held in Geneva, saw heated discussions and landmark agreements. Key resolutions include reducing carbon emissions by 50% over the next decade. This ambitious goal aims to limit global temperature rise to 1.5 degrees Celsius. Environmental activists welcomed the commitments but urged for swift implementation. Financial aid was promised to developing nations to help them transition to green energy. The summit emphasized the importance of global cooperation in addressing the climate crisis. Experts highlighted the urgent need for policy changes and innovation. The outcomes of this summit will shape future climate actions. Global leaders called for unity and sustained efforts to protect the planet.",
-        category = "world",
-        image = Res.drawable.image_3
+    ArticleItem(
+        title = "Sunrise over the Grand Canyon",
+        description = "An unforgettable morning as I watched the first light kiss the cliffs of the Grand Canyon, casting shades of pink and gold across the vast expanse. Standing at the edge, with only the sound of the wind, I felt an overwhelming sense of awe and insignificance in the face of nature’s grandeur. This moment reaffirmed my love for travel and nature’s healing power.",
+        thumbnail = Res.drawable.image_3
     ),
-    Headline(
-        title = "New Tech Startup Disrupts the Market",
-        description = "A new tech startup has taken the market by storm with its innovative product that promises to change the way we interact with technology. The company, founded by two university graduates, has developed a cutting-edge virtual assistant. This AI-powered assistant can seamlessly integrate with various devices and applications. Early adopters have praised its user-friendly interface and advanced features. The startup has secured significant funding from leading venture capitalists. Industry experts predict that this product will set new standards in the tech world. The founders envision a future where technology is more accessible and intuitive. Plans for further developments and expansions are already underway. The startup's success story is inspiring young entrepreneurs. The market is eagerly watching how this new player will evolve.",
-        category = "technology",
-        image = Res.drawable.image_4
+    ArticleItem(
+        title = "Finding Peace in Bali’s Hidden Temples",
+        description = "Venturing off the beaten path in Bali led me to serene, lesser-known temples nestled among lush forests. Away from the crowds, I found a quiet space to reflect and connect with Bali's rich spiritual heritage. These temples, adorned with intricate carvings and guarded by ancient statues, were a reminder of the enduring peace that can be found in cultural traditions.",
+        thumbnail = Res.drawable.image_4
     ),
-    Headline(
-        title = "Art Exhibition Showcases Local Talent",
-        description = "The city's annual art exhibition opened its doors today, featuring a stunning array of artworks from local artists. The exhibition, held at the downtown gallery, includes paintings, sculptures, and digital art. Visitors are treated to a diverse collection that reflects the rich cultural heritage of the region. This year's theme focuses on the intersection of tradition and modernity. The exhibition has attracted art enthusiasts and collectors from across the country. Highlights include a series of paintings that depict urban life. The event aims to provide a platform for emerging artists to showcase their talent. Workshops and interactive sessions are also part of the program. The exhibition will run for two weeks, offering ample opportunity for visitors to explore and appreciate the art. Organizers are hopeful that this event will foster greater appreciation for the arts.",
-        category = "arts",
-        image = Res.drawable.image_5
+    ArticleItem(
+        title = "A Culinary Adventure in Paris",
+        description = "From bustling street markets to cozy bakeries, my Parisian culinary journey was a feast for the senses. I explored Paris beyond the famous landmarks, discovering local favorites and hidden gems. Each dish, from flaky croissants to savory coq au vin, told a story of culture and tradition. Paris taught me that food is a language of its own, connecting people and places.",
+        thumbnail = Res.drawable.image_5
     ),
-    Headline(
-        title = "Groundbreaking Ceremony for New Hospital",
-        description = "A groundbreaking ceremony was held today for the construction of a new state-of-the-art hospital in the city. The hospital, which will be equipped with the latest medical technology, aims to provide high-quality healthcare to the community. Local officials, healthcare professionals, and residents attended the ceremony. The project is expected to create numerous jobs and boost the local economy. The hospital will include specialized departments for cardiology, oncology, and pediatrics. Plans also include a research center dedicated to medical innovations. The construction is scheduled to be completed within two years. The new facility will address the growing healthcare needs of the population. Officials emphasized the importance of this project for the well-being of the community. The initiative has received widespread support from various stakeholders.",
-        category = "local",
-        image = Res.drawable.image_6
+    ArticleItem(
+        title = "Volunteering in Rural Kenya",
+        description = "Living and volunteering in a rural Kenyan village was a transformative experience. I spent time helping with local projects, from building classrooms to teaching, while forming bonds with the community. Their resilience, optimism, and warmth left a lasting impact, teaching me the value of kindness, resourcefulness, and the strength of community even in challenging circumstances.",
+        thumbnail = Res.drawable.image_6
     ),
-    Headline(
-        title = "Ancient Artifacts Discovered in Archaeological Dig",
-        description = "Archaeologists have unearthed a treasure trove of ancient artifacts in a recent excavation. The site, located near the historic town, has revealed objects dating back thousands of years. These artifacts include pottery, tools, and jewelry, offering a glimpse into the lives of early inhabitants. The discovery has excited historians and researchers. It is expected to provide valuable insights into the region's ancient civilization. The excavation team, led by Dr. John Doe, has meticulously documented the findings. Plans are underway to study and preserve these artifacts. The local museum has expressed interest in displaying them to the public. This discovery underscores the historical significance of the area. Further excavations are planned to uncover more about this ancient culture. The findings have generated considerable interest in the academic community.",
-        category = "history",
-        image = Res.drawable.image_7
+    ArticleItem(
+        title = "Retracing Family Roots in Ireland",
+        description = "Traveling through the emerald landscapes of Ireland was more than a trip; it was a journey into my family’s history. From small villages to sweeping coastlines, I pieced together stories from my ancestors and felt a deep connection to the land they once called home. This journey was a powerful reminder of heritage, family bonds, and the role our roots play in shaping who we are.",
+        thumbnail = Res.drawable.image_7
     ),
-
 )
+
+

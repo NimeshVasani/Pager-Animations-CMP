@@ -62,13 +62,14 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.material.navigation)
             implementation(compose.materialIconsExtended)
-            implementation(libs.coil.network.okhttp)
-
             implementation(libs.adaptive)
             implementation(libs.adaptive.layout)
             implementation(libs.adaptive.navigation)
             implementation(libs.coil3.coil.gif)
 
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

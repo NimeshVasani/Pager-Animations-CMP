@@ -9,7 +9,10 @@ object MainScreen
 object  InstagramStoryPager
 
 @Serializable
-object BookAnimationPager
+object VerticalBookAnimationPager
+
+@Serializable
+object HorizontalBookAnimationPager
 
 @Serializable
 object WallAnimationPager

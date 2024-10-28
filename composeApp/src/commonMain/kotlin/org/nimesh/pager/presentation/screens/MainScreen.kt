@@ -33,7 +33,7 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavController) {
         Text(
             text = "Try Different Type of Pager Animation",
             fontSize = 28.sp,
-            color = Color.Black,
+            color = Color.White,
             modifier = Modifier.padding(20.dp).fillMaxWidth(),
             textAlign = TextAlign.Center,
             fontFamily = FontFamily.SansSerif,
@@ -55,7 +55,7 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavController) {
 
         Button(
             onClick = {
-                navController.navigate(BookAnimationPager)
+                navController.navigate(VerticalBookAnimationPager)
             },
             modifier = Modifier
                 .padding(20.dp)
@@ -63,7 +63,20 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavController) {
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479c9d))
         ) {
-            Text("Book Animation In Pager")
+            Text("Vertical Book Animation")
+        }
+
+        Button(
+            onClick = {
+                navController.navigate(HorizontalBookAnimationPager)
+            },
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3c4d93))
+        ) {
+            Text("Horizontal Book Animation")
         }
 
         Button(
@@ -89,7 +102,7 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavController) {
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF819a78))
         ) {
-            Text("Movie Pager Animation")
+            Text("Stack Card Animation")
         }
 
     }
